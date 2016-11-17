@@ -1,4 +1,4 @@
-#YLE Areena radiodokumenttine MP3 tiedostojen noutaja - PodCatcher
+#YLE Areena radiodokumenttien MP3 tiedostojen noutaja - PodCatcher
 
 Tallentaa valittujen ohjelmasarjojen aiemmin lataamattomat MP3 tiedostot kovalevylle valittuun hakemistoon
 
