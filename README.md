@@ -1,9 +1,9 @@
 #YLE Areena radiodokumenttien MP3 tiedostojen noutaja - PodCatcher
 
-Tallentaa valittujen ohjelmasarjojen aiemmin lataamattomat MP3 tiedostot kovalevylle valittuun hakemistoon
+Tallentaa valittujen ohjelmasarjojen aiemmin lataamattomat MP3 tiedostot kovalevylle valittuun hakemistoon.
 
-Voit siirtää kuunnellut tiedostot lataushakemiston alle esim. \Kuunnellut nimiseen kansioon. Näitä tiedostoja ei haeta uudestaan
+Ennen käynnistystä tee valmiiksi esim. C:\YleDokumentit niminen kansio.
 
-Ennen käynnistystä tee valmiiksi esim. C:\YleDokumentit kansio
+Kun olet kuunnellut tietyt dokumentit, voit siirtää ne lataushakemiston alle esim. \Kuunnellut nimiseen kansioon, jolloin myös näitä tiedostoja ei haeta uudestaan.
 
 Contribute: www.nsd.fi
