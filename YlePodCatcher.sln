@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YlePodCatcher", "YlePodCatcher\YlePodCatcher.csproj", "{C247B7D5-700F-4680-8EED-1A900E246225}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F3F36DD0-AAAB-4776-9BD9-2ACEE7BC9882}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CD_ROM|x86 = CD_ROM|x86
+		Debug|x86 = Debug|x86
+		DVD-5|x86 = DVD-5|x86
+		Release|x86 = Release|x86
+		SingleImage|x86 = SingleImage|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C247B7D5-700F-4680-8EED-1A900E246225}.CD_ROM|x86.ActiveCfg = Release|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.CD_ROM|x86.Build.0 = Release|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.Debug|x86.ActiveCfg = Debug|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.Debug|x86.Build.0 = Debug|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.DVD-5|x86.ActiveCfg = Debug|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.DVD-5|x86.Build.0 = Debug|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.Release|x86.ActiveCfg = Release|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.Release|x86.Build.0 = Release|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.SingleImage|x86.ActiveCfg = Release|x86
+		{C247B7D5-700F-4680-8EED-1A900E246225}.SingleImage|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
