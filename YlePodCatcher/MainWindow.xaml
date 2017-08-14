@@ -51,7 +51,7 @@
             </Grid.ColumnDefinitions>
 
             <ListBox Name="libraryCheckboxList" Grid.Column="0" Grid.Row="0" Margin="4" SelectionChanged="libraryCheckboxList_SelectionChanged" MouseDown="libraryCheckboxList_MouseDown" />
-            <Label Grid.Column="0" Grid.Row="0"  HorizontalAlignment="Center" VerticalAlignment="Center" Name="updateListText" Cursor="Hand">Päivitä lista</Label>
+            <Label Grid.Column="0" Grid.Row="0"  HorizontalAlignment="Center" VerticalAlignment="Center" Name="updateListText" Cursor="Hand">Avaa http://areena.yle.fi/radio/a-o rullaa loppuun ja tallenna HTML koko sivusto ja kopioi saved-web-page.html tiedostoon. Sitten paina F5 + Päivitä lista</Label>
             <Border Grid.Column="1" Grid.Row="0" BorderBrush="DarkGray" CornerRadius="2" Margin="4" Padding="5" BorderThickness="1">
                 <WebBrowser Name="browser"/>
             </Border>

@@ -133,7 +133,9 @@ namespace YlePodCatcher
             string url = baseUrl;
             if (!url.EndsWith("/")) url = url + "/";
 
-            string value = readHtml(url);
+            //string value = readHtml(url);
+            string value = System.IO.File.ReadAllText(@"saved-web-page.html");
+
 
             if (value == "")
             {
@@ -157,15 +159,17 @@ namespace YlePodCatcher
             string title = "";
             string desc = "";
 
-            splitWell(value, "<ul class=\"index\">", true, out head, out tail);
+            splitWell(value, "package-content-group-container", true, out head, out tail);
             string rest = tail.Trim() + "END";
 
             while (true)
             {
-                splitWell(rest, "<a href=\"/1-", true, out head, out tail);
+                splitWell(rest, "href=\"http://areena.yle.fi/1-", true, out head, out tail);
                 if (tail == "") break;
                 splitWell(tail, "\">", true, out libraryID, out tail);
-                splitWell(tail, "</a>", true, out title, out tail);
+                splitWell(tail, "program-title\">", true, out head, out tail);
+
+                splitWell(tail, "</span>", true, out title, out tail);
                 rest = tail;
 
                 desc = "";

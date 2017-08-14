@@ -146,7 +146,7 @@ namespace YlePodCatcher
                         Mp3File m = new Mp3File();
                         m.Title = removeInvalidFileNameChars(nodeItem["title"].InnerText);
                         string toFind = Libraries[libraryIndex].Title + " - ";
-                        if (m.Title.Substring(0, toFind.Length) == toFind) m.Title = m.Title.Remove(0, toFind.Length);
+                        if (m.Title.StartsWith(toFind)) m.Title = m.Title.Remove(0, toFind.Length);
                         m.Url = longUrl;
                         m.Length = length;
                         m.ID = fileID;
