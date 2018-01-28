@@ -28,7 +28,7 @@ namespace YlePodCatcher
         private const string appCaption = "Pod";
         private IList<Library> libraries;
         private string midUrl = "";
-        private const string baseUrl = @"http://areena.yle.fi/radio/a-o/ladattavat/";
+        private const string baseUrl = @"https://areena.yle.fi/radio/a-o/ladattavat/";
 
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace YlePodCatcher
 
             if (value == "")
             {
-                MessageBox.Show("Tietoja ei löydy. Tarkasta ohjelmalistauksen web-osoite. Käytä muotoa: http://areena.yle.fi/radio/a-o", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Tietoja ei löydy. Tarkasta ohjelmalistauksen web-osoite. Käytä muotoa: https://areena.yle.fi/radio/a-o", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -159,17 +159,16 @@ namespace YlePodCatcher
             string title = "";
             string desc = "";
 
-            splitWell(value, "package-content-group-container", true, out head, out tail);
+            splitWell(value, "card-list list", true, out head, out tail);
             string rest = tail.Trim() + "END";
 
             while (true)
             {
-                splitWell(rest, "href=\"http://areena.yle.fi/1-", true, out head, out tail);
+                splitWell(rest, "href=\"https://areena.yle.fi/1-", true, out head, out tail);
                 if (tail == "") break;
                 splitWell(tail, "\">", true, out libraryID, out tail);
-                splitWell(tail, "program-title\">", true, out head, out tail);
+                splitWell(tail, "</a>", true, out title, out tail);
 
-                splitWell(tail, "</span>", true, out title, out tail);
                 rest = tail;
 
                 desc = "";
@@ -218,7 +217,7 @@ namespace YlePodCatcher
         }
 
         private string getDescription(string libraryId) {
-            string url = "http://areena.yle.fi/1-" + libraryId;
+            string url = "https://areena.yle.fi/1-" + libraryId;
             string value = readHtml(url);
 
             string head = "";
@@ -424,7 +423,7 @@ namespace YlePodCatcher
             string name = cbo.Name;
             name = name.Substring(1, name.Length - 1);
 
-            browser.Navigate("http://areena.yle.fi/1-" + name);
+            browser.Navigate("https://areena.yle.fi/1-" + name);
         }
 
         private void libraryCheckboxList_SelectionChanged(object sender, SelectionChangedEventArgs e) {
