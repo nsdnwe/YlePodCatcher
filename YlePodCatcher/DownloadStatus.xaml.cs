@@ -16,6 +16,7 @@ using System.IO;
 using System.Net;
 using System.Xml.Serialization;
 using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace YlePodCatcher
 {
@@ -138,7 +139,10 @@ namespace YlePodCatcher
                         string longUrl = parts[0];
 
                         string[] parts2 = longUrl.Split('/');
-                        string fileID = parts2[parts2.Length - 1];
+                        string fileIDBase = "-" + parts2[parts2.Length - 1];
+                        string[] parts3 = fileIDBase.Split('-');
+                        string fileID = parts3[parts3.Length - 1];
+
                         fileID = fileID.Replace(".mp3", "");
 
                         // Make new Mp3File object
@@ -171,27 +175,28 @@ namespace YlePodCatcher
         /// <summary>
         /// Check does this mp3 file exist
         /// </summary>
-        private bool checkDoesMp3FileAlreadyExist(string fileID)
+        private bool checkDoesMp3FileAlreadyExist(string fileID, string fileName)
         {
             string fullFolder = BaseFolderPath + Libraries[libraryIndex].Title + "\\";
-            return findFileID(fullFolder, fileID);
+            return findFileID(fullFolder, fileID, fileName);
         }
 
         /// <summary>
         /// Find does fileid exist in any file name in this folder
         /// </summary>
-        public bool findFileID(string sourceDir, string fileID)
+        public bool findFileID(string sourceDir, string fileID, string fileName)
         {
 
             // Process the list of files found in the directory. 
 
             string search = "(" + fileID + ")";
             string[] fileEntries = Directory.GetFiles(sourceDir);
-            foreach (string fileName in fileEntries)
+            foreach (string fileNameInFolder in fileEntries)
             {
                 // My Document Name (12345).mp3
 
-                if (fileName.IndexOf(search) > 0) return true;
+                if (fileNameInFolder.IndexOf(search) > 0) return true;
+                if (fileNameInFolder.IndexOf(fileName) > 0) return true;
             }
 
             // Recurse into subdirectories of this directory.
@@ -203,7 +208,7 @@ namespace YlePodCatcher
 
                 if ((File.GetAttributes(subdir) & FileAttributes.ReparsePoint) != FileAttributes.ReparsePoint)
                 {
-                    bool result = findFileID(subdir, fileID); // Recourse
+                    bool result = findFileID(subdir, fileID, fileName); // Recourse
                     if (result) return true;
                 }
             return false;
@@ -306,7 +311,7 @@ namespace YlePodCatcher
 
                 progressBar.Value = 100 * ((double)(mp3Index + 1) / (double)(Libraries[libraryIndex].Mp3Files.Count + 1));
 
-                if (!checkDoesMp3FileAlreadyExist(fileID))
+                if (!checkDoesMp3FileAlreadyExist(fileID, fileName))
                 {
                     if (length > 0)
                         addStatusLine(string.Format("Ladataan tiedostoa: {0} ({1} MB)...", fileName, Math.Round(length, 2)));
@@ -410,6 +415,7 @@ namespace YlePodCatcher
             status.Focus();
             status.SelectionStart = status.Text.Length;
             status.SelectionLength = 0;
+            Debug.WriteLine(value);
         }
 
         /// <summary>
