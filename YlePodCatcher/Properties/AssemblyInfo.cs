@@ -8,11 +8,11 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("YlePodCatcher")]
-[assembly: AssemblyDescription("Download public MP3 files from YLE Areena based on CSS information")]
+[assembly: AssemblyDescription("Download public MP3 files from YLE Areena")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("YlePodCatcher")]
-[assembly: AssemblyCopyright("Copyright © Niko Wessman 2011")]
+[assembly: AssemblyCopyright("Author Niko Wessman from nsd.fi - MIT License")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

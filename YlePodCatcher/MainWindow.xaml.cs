@@ -16,9 +16,14 @@ using System.IO;
 using System.Net;
 using System.Xml.Serialization;
 using System.Threading;
+using FontAwesome.WPF;
+using System.ComponentModel;
+using System.Threading.Tasks;
 
 // \\192.168.100.110\YleDokumentit\
 // Avaa https://areena.yle.fi/radio/a-o rullaa loppuun ja tallenna HTML koko sivusto nimellä saved-web-page.html => www.nsd.fi
+
+// Install-Package FontAwesome.WPF
 
 namespace YlePodCatcher
 {
@@ -33,7 +38,6 @@ namespace YlePodCatcher
         private const string baseUrl = @"https://areena.yle.fi/radio/a-o/ladattavat/";
 
         private List<string> removedLibraries = new List<string>();
-        private Random random = new Random();
 
         /// <summary>
         /// Start application
@@ -62,12 +66,11 @@ namespace YlePodCatcher
             updateListContent();
         }
 
+
         private void updateListContent() {
             if (!checkBaseUrlAndFolder()) return;
 
-            //infoText.Visibility = System.Windows.Visibility.Visible;
             this.Cursor = Cursors.Wait;
-
             fillLibraryCheckboxList();
             this.Cursor = Cursors.Arrow;
 
@@ -124,12 +127,17 @@ namespace YlePodCatcher
             {
                 ListBoxItem lbi = (ListBoxItem)libraryCheckboxList.Items[i];
                 StackPanel sp = (StackPanel)lbi.Content;
-                CheckBox cbo = (CheckBox)sp.Children[0];
+                CheckBox cbo = (CheckBox)sp.Children[1];
                 if (cbo.IsChecked == true) cbo.IsChecked = false;
             }
         }
         private void showOnlyRecommended_Click(object sender, RoutedEventArgs e) {
-            if (MessageBox.Show("Näytetäänkö listalla vain suositellut ohjelmasarjat?", appCaption, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) return;
+            this.Cursor = Cursors.Wait; // Yes, must be like this. Yay wpf!
+            if (MessageBox.Show("Näytetäänkö listalla vain suositellut ohjelmasarjat?", appCaption, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) {
+                this.Cursor = Cursors.Arrow; 
+                return;
+            }
+
             try {
                 using (WebClient client = new WebClient()) {
                     string text = client.DownloadString("https://nsd.fi/yle-pod-catcher/removed-libraries.txt");
@@ -137,17 +145,25 @@ namespace YlePodCatcher
                     foreach (string line in lines) removeLibrary(line.Trim());
                 }
             } catch (Exception ex) {
+                this.Cursor = Cursors.Arrow;
                 MessageBox.Show("Virhe: Suosituslistaa ei löydy. Tarkasta verkkoyhteyden tila ja kokeile hetken kuluttua uudelleen.", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             updateListContent();
+            this.Cursor = Cursors.Arrow;
+
         }
         private void showAll_Click(object sender, RoutedEventArgs e) {
-            if (MessageBox.Show("Näytetäänkö listalla kaikki ohjelmasarjat?", "Vahvistus", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) return;
+            this.Cursor = Cursors.Wait;
+            if (MessageBox.Show("Näytetäänkö listalla kaikki ohjelmasarjat?", "Vahvistus", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) {
+                return;
+                this.Cursor = Cursors.Arrow;
+            }
             try {
                 File.Delete("removed-libraries.txt");
                 updateListContent();
+                this.Cursor = Cursors.Arrow;
             } catch  {
             }
         }
