@@ -88,7 +88,7 @@ namespace YlePodCatcher
 	        {	        
                 rssDoc.Load(rssReader);
 	        }
-	        catch 
+	        catch (Exception ex)
 	        {
                 return;
             }
@@ -351,12 +351,15 @@ namespace YlePodCatcher
             {
                 try
                 {
+                    Debug.WriteLine("Downloading " + url + "; " + fullFileName);
+
                     client.DownloadFile(url, fullFileName);
                     howManyNewFilesLoaded++;
                     fileToDeleteIfDownloadIsCancelled = fullFileName;
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine("Error: " + ex.ToString());
                     lastError = ex.Message;
                 }
             }

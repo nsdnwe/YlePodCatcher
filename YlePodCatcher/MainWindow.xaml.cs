@@ -15,8 +15,10 @@ using System.Windows.Shapes;
 using System.IO;
 using System.Net;
 using System.Xml.Serialization;
+using System.Threading;
 
 // \\192.168.100.110\YleDokumentit\
+// Avaa https://areena.yle.fi/radio/a-o rullaa loppuun ja tallenna HTML koko sivusto nimellä saved-web-page.html => www.nsd.fi
 
 namespace YlePodCatcher
 {
@@ -30,6 +32,8 @@ namespace YlePodCatcher
         private string midUrl = "";
         private const string baseUrl = @"https://areena.yle.fi/radio/a-o/ladattavat/";
 
+        private List<string> removedLibraries = new List<string>();
+        private Random random = new Random();
 
         /// <summary>
         /// Start application
@@ -41,27 +45,37 @@ namespace YlePodCatcher
             // Try to load old values
 
             Configuration conf = deserializeFromXml();
-            if (conf.BaseFolder == null) return;
-            baseFolder.Text = conf.BaseFolder;
+            if (conf.BaseFolder == null) {
+                string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                baseFolder.Text = path + "\\Yle Radiodokumentteja";
+            } else {
+                baseFolder.Text = conf.BaseFolder;
+            }
         }
 
         /// <summary>
         /// Update button clicked
         /// </summary>
-        private void onUpdateListClick(object sender, RoutedEventArgs e)
-        {
+        private void onUpdateListClick(object sender, RoutedEventArgs e) {
             // Get libraries from yle web pages
 
-            if (!checkBaseUrlAndFolder()) return; 
+            updateListContent();
+        }
 
+        private void updateListContent() {
+            if (!checkBaseUrlAndFolder()) return;
+
+            //infoText.Visibility = System.Windows.Visibility.Visible;
             this.Cursor = Cursors.Wait;
+
             fillLibraryCheckboxList();
             this.Cursor = Cursors.Arrow;
 
             clearSelection.IsEnabled = true;
             process.IsEnabled = true;
-            updateListText.Visibility = System.Windows.Visibility.Hidden;
             instruction.Visibility = System.Windows.Visibility.Visible;
+            showOnlyRecommended.IsEnabled = true;
+            showAll.IsEnabled = true;
             process.Focus();
         }
 
@@ -89,6 +103,7 @@ namespace YlePodCatcher
             }
 
             this.Hide();
+
             DownloadStatus ds = new DownloadStatus();
             ds.Libraries = libraries;
             ds.BaseFolderPath = baseFolder.Text;
@@ -98,19 +113,13 @@ namespace YlePodCatcher
             Application.Current.Shutdown();
         }
 
-        /// <summary>
-        /// Close button clicked
-        /// </summary>
         private void onCloseClick(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
 
-        /// <summary>
-        /// Clear checkboxes
-        /// </summary>
-        private void onClearSelection(object sender, RoutedEventArgs e)
-        {
+        private void onClearSelection(object sender, RoutedEventArgs e) {
+            if (MessageBox.Show("Poista kaikki checkbox-valinnat?", appCaption, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) return;
             for (int i = 0; i < libraryCheckboxList.Items.Count; i++)
             {
                 ListBoxItem lbi = (ListBoxItem)libraryCheckboxList.Items[i];
@@ -119,12 +128,37 @@ namespace YlePodCatcher
                 if (cbo.IsChecked == true) cbo.IsChecked = false;
             }
         }
+        private void showOnlyRecommended_Click(object sender, RoutedEventArgs e) {
+            if (MessageBox.Show("Näytetäänkö listalla vain suositellut ohjelmasarjat?", appCaption, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) return;
+            try {
+                using (WebClient client = new WebClient()) {
+                    string text = client.DownloadString("https://nsd.fi/yle-pod-catcher/removed-libraries.txt");
+                    string[] lines = text.Split('\n');
+                    foreach (string line in lines) removeLibrary(line.Trim());
+                }
+            } catch (Exception ex) {
+                MessageBox.Show("Virhe: Suosituslistaa ei löydy. Tarkasta verkkoyhteyden tila ja kokeile hetken kuluttua uudelleen.", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            updateListContent();
+        }
+        private void showAll_Click(object sender, RoutedEventArgs e) {
+            if (MessageBox.Show("Näytetäänkö listalla kaikki ohjelmasarjat?", "Vahvistus", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) return;
+            try {
+                File.Delete("removed-libraries.txt");
+                updateListContent();
+            } catch  {
+            }
+        }
 
         /// <summary>
         /// Load available libraries and make a checkbox list
         /// </summary>
         private void fillLibraryCheckboxList()
         {
+            loadRemovedLibrariesFromFile(); // => removedLibraries list
+
             // Try to load old values
 
             Configuration conf = deserializeFromXml();
@@ -134,7 +168,19 @@ namespace YlePodCatcher
             if (!url.EndsWith("/")) url = url + "/";
 
             //string value = readHtml(url);
-            string value = System.IO.File.ReadAllText(@"saved-web-page.html");
+            string value = "";
+                
+            //value = System.IO.File.ReadAllText(@"saved-web-page.html");
+            try {
+                using (WebClient client = new WebClient()) {
+                    var htmlData = client.DownloadData("https://nsd.fi/yle-pod-catcher/saved-web-page.html");
+                    value = Encoding.UTF8.GetString(htmlData);
+                }
+            } catch (Exception ex) {
+                MessageBox.Show("Virhe: Kirjastolistaa ei löydy. Tarkasta verkkoyhteyden tila ja kokeile hetken kuluttua uudelleen.", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
+                this.Close();
+                return;
+            }
 
 
             if (value == "")
@@ -172,26 +218,42 @@ namespace YlePodCatcher
                 rest = tail;
 
                 desc = "";
-                if (getDescriptions.IsChecked.Value) desc = getDescription(libraryID);
+                //if (getDescriptions.IsChecked.Value) desc = getDescription(libraryID);
 
                 // Add line on check box list
-                if (title != "null" && desc != "-1")
+                if (title != "null" && desc != "-1" && !removedLibraries.Any(z => z == libraryID))
                 {
+                    Button btnInfo = new Button();
+                    btnInfo.Content = " Info ";
+                    //btnInfo.Content = "b" + libraryID;
+                    btnInfo.Margin = new Thickness(0);
+                    btnInfo.Name = "b" + libraryID;
+
+                    btnInfo.AddHandler(Button.ClickEvent, new RoutedEventHandler(infoButton_Click)); // Add event hander for Info
+
+                    Button btnDelete = new Button();
+                    btnDelete.Content = " Poista listalta ";
+                    btnDelete.Margin = new Thickness(0);
+                    btnDelete.Name = "d" + libraryID;
+
+                    btnDelete.AddHandler(Button.ClickEvent, new RoutedEventHandler(removeButton_Click)); // Add event hander for Delete
+
                     title = removeInvalidFileNameChars(title);
                     ListBoxItem lbi = new ListBoxItem();
+
+
                     lbi.Margin = new Thickness(1);
-                    if (backcolored)
-                    {
+                    if (backcolored) {
                         lbi.Background = new SolidColorBrush(backcoloredColor);
                         backcolored = false;
                     }
-                    else
-                    {
+                    else {
                         backcolored = true;
                     }
                     CheckBox cbo = new CheckBox();
                     cbo.Name = "f" + libraryID;
-                    cbo.Width = 500;
+                    cbo.Width = 470;
+                    cbo.Margin = new Thickness(5);
                     if (isOnList(conf, libraryID)) cbo.IsChecked = true;
                     cbo.Content = title;
 
@@ -202,8 +264,10 @@ namespace YlePodCatcher
 
                     StackPanel sp = new StackPanel();
                     sp.Orientation = Orientation.Horizontal;
+                    sp.Children.Add(btnInfo);
                     sp.Children.Add(cbo);
                     sp.Children.Add(lab);
+                    sp.Children.Add(btnDelete);
                     if (desc != "") {
                         Label tt = new Label();
                         tt.Content = desc;
@@ -214,6 +278,25 @@ namespace YlePodCatcher
                     libraryCheckboxList.Items.Add(lbi);
                 }
             }
+        }
+
+        private void infoButton_Click(object sender, RoutedEventArgs e) {
+            Button btn = (Button)sender;
+            if (btn == null) return;
+            string name = btn.Name;
+            name = name.Substring(1, name.Length - 1);
+            System.Diagnostics.Process.Start("https://areena.yle.fi/1-" + name);
+        }
+
+        private void removeButton_Click(object sender, RoutedEventArgs e) {
+            Button btn = (Button)sender;
+            if (btn == null) return;
+            string name = btn.Name;
+            name = name.Substring(1, name.Length - 1);
+            removeLibrary(name);
+            StackPanel sp = (StackPanel)btn.Parent;
+            ListBoxItem lpi = (ListBoxItem)sp.Parent;
+            libraryCheckboxList.Items.Remove(lpi);
         }
 
         private string getDescription(string libraryId) {
@@ -306,7 +389,7 @@ namespace YlePodCatcher
             {
                 ListBoxItem lbi = (ListBoxItem)libraryCheckboxList.Items[i];
                 StackPanel sp = (StackPanel)lbi.Content;
-                CheckBox cbo = (CheckBox)sp.Children[0];
+                CheckBox cbo = (CheckBox)sp.Children[1];
                 if (cbo.IsChecked == true)
                 {
                     Library lib = new Library();
@@ -415,30 +498,28 @@ namespace YlePodCatcher
             return path.Replace(@"file:\", "");
         }
 
-        private void selectionChanged() {
-            ListBoxItem lbi = (ListBoxItem)libraryCheckboxList.SelectedItem;
-            if (lbi == null) return;
-            StackPanel sp = (StackPanel)lbi.Content;
-            CheckBox cbo = (CheckBox)sp.Children[0];
-            string name = cbo.Name;
-            name = name.Substring(1, name.Length - 1);
-
-            browser.Navigate("https://areena.yle.fi/1-" + name);
-        }
-
-        private void libraryCheckboxList_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            selectionChanged();
-        }
-
-        private void libraryCheckboxList_MouseDown(object sender, MouseButtonEventArgs e) {
-            selectionChanged();
-        }
-
         private void browseFolder_Click(object sender, RoutedEventArgs e) {
             var dialog = new System.Windows.Forms.FolderBrowserDialog();
             System.Windows.Forms.DialogResult result = dialog.ShowDialog();
             if (result.ToString() != "OK") return;
             baseFolder.Text = dialog.SelectedPath;
+        }
+
+        private void removeLibrary(string name) {
+            if (removedLibraries.Any(z => z == name)) return;
+            StreamWriter sw = new StreamWriter("removed-libraries.txt", append:true);
+            sw.WriteLine(name);
+            sw.Close();
+            removedLibraries.Add(name); // Needed?
+        }
+
+        private void loadRemovedLibrariesFromFile() {
+            removedLibraries = new List<string>();
+            try {
+                var lines = File.ReadAllLines("removed-libraries.txt");
+                foreach (var line in lines) removedLibraries.Add(line);
+            } catch  {
+            }
         }
     }
 }

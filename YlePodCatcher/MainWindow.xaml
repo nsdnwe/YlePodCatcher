@@ -1,7 +1,7 @@
 ﻿<Window x:Class="YlePodCatcher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Yle PodCatcher" Height="850" Width="1200" Icon="/YlePodCatcher;component/Images/1300953094_Cute_Ball_-_Games.png" WindowState="Maximized">
+        Title="YlePodCatcher" Height="600" Width="800" Icon="/YlePodCatcher;component/Images/1300953094_Cute_Ball_-_Games.png" WindowStartupLocation="CenterScreen">
     <Grid Margin="5">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -28,33 +28,32 @@
                 <Label Grid.Column="0" Grid.Row="0" FontWeight="Bold">Tallennuskansio:</Label>
                 <TextBox Name="baseFolder" Margin="3" Grid.Row="0" Grid.Column="1">c:\Testi kansio\Yle-radiodokumentit</TextBox>
                 <Button x:Name="browseFolder" Margin="3" Grid.Row="0" Grid.Column="3"  Content="  Selaa...  " HorizontalAlignment="Left" Click="browseFolder_Click" />
-                <Label Grid.Column="0" Grid.Row="1" FontWeight="Bold">Hae lisätiedot:</Label>
-                <CheckBox x:Name="getDescriptions" Content="Ohjelmakansioiden lisätietojen haku kestää 1-2 min" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Margin="4,6,0,0" VerticalAlignment="Top"/>
+                <!--<Label Grid.Column="0" Grid.Row="1" FontWeight="Bold">Hae lisätiedot:</Label>
+                <CheckBox x:Name="getDescriptions" Content="Ohjelmakansioiden lisätietojen haku kestää 1-2 min" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Margin="4,6,0,0" VerticalAlignment="Top"/>-->
             </Grid>
         </GroupBox>
 
         <StackPanel Margin= "1,11,1,1" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="0" Grid.RowSpan="3">
             <Button Width="130" Height="25" Margin="3" Click="onUpdateListClick" Name="updateList" IsDefault="True">Päivitä lista</Button>
-            <Button Width="130" Height="25" Margin="3" Click="onProcessClick" Name="process" IsEnabled="False">Hae tiedostot</Button>
+            <Button Width="130" Height="25" Margin="3" Click="onProcessClick" Name="process" IsEnabled="False">Hae valitut sarjat</Button>
             <Button Width="130" Height="25" Margin="3" Click="onClearSelection" Name="clearSelection" IsEnabled="False">Poista kaikki valinnat</Button>
-            <Button Width="130" Height="25" Margin="3" Click="onCloseClick">Sulje</Button>
+            <Button Width="130" Height="25" Margin="3" Click="showOnlyRecommended_Click" Name="showOnlyRecommended" IsEnabled="False">Näytä vain suositellut</Button>
+            <Button Width="130" Height="25" Margin="3" Click="showAll_Click" Name="showAll" IsEnabled="False">Näytä kaikki</Button>
+            <Button Width="130" Height="25" Margin="3" Click="onCloseClick" Content="Sulje"/>
         </StackPanel>
 
         <StackPanel Grid.Column="0" Grid.Row="1" Margin="1" HorizontalAlignment="Left" Orientation="Horizontal" Name="instruction" Visibility="Hidden" >
-            <Label Width="500">Valitse listalta ohjelmasarjat, joiden vielä lataamattomat podcast-mp3 tiedostot haluat ladata</Label>
+            <Label Width="500">Valitse listalta ohjelmasarjat, joiden lataamattomat podcast-mp3 tiedostot haluat ladata</Label>
         </StackPanel>
 
-        <Grid Grid.Column="0" Grid.Row="1" Margin="0,25,0,3" Grid.RowSpan="2">
+        <Grid Grid.Column="0" Grid.Row="1" Margin="-10,27,10,0.5" Grid.RowSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <ListBox Name="libraryCheckboxList" Grid.Column="0" Grid.Row="0" Margin="4" SelectionChanged="libraryCheckboxList_SelectionChanged" MouseDown="libraryCheckboxList_MouseDown" />
-            <Label Grid.Column="0" Grid.Row="0"  HorizontalAlignment="Center" VerticalAlignment="Center" Name="updateListText" Cursor="Hand">Avaa http://areena.yle.fi/radio/a-o rullaa loppuun ja tallenna HTML koko sivusto ja kopioi saved-web-page.html tiedostoon. Sitten paina F5 + Päivitä lista</Label>
-            <Border Grid.Column="1" Grid.Row="0" BorderBrush="DarkGray" CornerRadius="2" Margin="4" Padding="5" BorderThickness="1">
-                <WebBrowser Name="browser"/>
-            </Border>
+            <ListBox Name="libraryCheckboxList" Grid.Column="0" Grid.Row="0" Margin="14,4,0,4" Grid.ColumnSpan="2"  />
+            <!--<Label Grid.Column="0" Grid.Row="0"  HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="infoText" Cursor="Hand" Grid.ColumnSpan="2" Margin="20,180,10,176" Height="122" Width="617" Content=""/>-->
 
 
         </Grid>
