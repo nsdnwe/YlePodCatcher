@@ -6,7 +6,7 @@ Kuunnellut dokumentit voi siirt‰‰ latauskansion alle Kuunnellut-kansioon, jolloi
 
 **Asennus**
 
-* Lataa .zip-paketti t‰‰lt‰ https://github.com/nsdnwe/YlePodCatcher/setup.zip
+* Lataa .zip-paketti t‰‰lt‰ https://github.com/nsdnwe/YlePodCatcher/blob/master/setup.zip
 * Pura paketti 
 * Aja Setup.exe 
 
