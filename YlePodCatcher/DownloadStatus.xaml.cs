@@ -27,7 +27,6 @@ namespace YlePodCatcher
     {
         public string BaseFolderPath;
         public string BaseUrl;
-        public string MidUrl;
         public IList<Library> Libraries;
 
         private const string feedUrl = "http://feeds.yle.fi/areena/v1/series/1-{0}.rss?lang=fi&downloadable=true";

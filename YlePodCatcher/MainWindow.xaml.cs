@@ -19,6 +19,7 @@ using System.Threading;
 using FontAwesome.WPF;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 // \\192.168.100.110\YleDokumentit\
 // Avaa https://areena.yle.fi/radio/a-o rullaa loppuun ja tallenna HTML koko sivusto nimellä saved-web-page.html => www.nsd.fi
@@ -34,7 +35,6 @@ namespace YlePodCatcher
     {
         private const string appCaption = "Pod";
         private IList<Library> libraries;
-        private string midUrl = "";
         private const string baseUrl = @"https://areena.yle.fi/radio/a-o/ladattavat/";
 
         private List<string> removedLibraries = new List<string>();
@@ -55,6 +55,7 @@ namespace YlePodCatcher
             } else {
                 baseFolder.Text = conf.BaseFolder;
             }
+            Console.Out.WriteLine("Valmis.");
         }
 
         /// <summary>
@@ -62,7 +63,6 @@ namespace YlePodCatcher
         /// </summary>
         private void onUpdateListClick(object sender, RoutedEventArgs e) {
             // Get libraries from yle web pages
-
             updateListContent();
         }
 
@@ -107,12 +107,15 @@ namespace YlePodCatcher
 
             this.Hide();
 
-            DownloadStatus ds = new DownloadStatus();
-            ds.Libraries = libraries;
-            ds.BaseFolderPath = baseFolder.Text;
-            ds.BaseUrl = baseUrl;
-            ds.MidUrl = midUrl;
-            ds.ShowDialog();
+            Program.Libraries = libraries;
+            Program.BaseFolderPath = baseFolder.Text;
+            Program.BaseUrl = baseUrl;
+            Program.GetFiles();
+            //DownloadStatus ds = new DownloadStatus();
+            //ds.Libraries = libraries;
+            //ds.BaseFolderPath = baseFolder.Text;
+            //ds.BaseUrl = baseUrl;
+            //ds.ShowDialog();
             Application.Current.Shutdown();
         }
 
@@ -156,9 +159,9 @@ namespace YlePodCatcher
         }
         private void showAll_Click(object sender, RoutedEventArgs e) {
             this.Cursor = Cursors.Wait;
-            if (MessageBox.Show("Näytetäänkö listalla kaikki ohjelmasarjat?", "Vahvistus", MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) {
-                return;
+            if (MessageBox.Show("Näytetäänkö listalla kaikki ohjelmasarjat?", appCaption, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) {
                 this.Cursor = Cursors.Arrow;
+                return;
             }
             try {
                 File.Delete("removed-libraries.txt");
@@ -185,7 +188,8 @@ namespace YlePodCatcher
 
             //string value = readHtml(url);
             string value = "";
-                
+            int counter = 0;
+
             //value = System.IO.File.ReadAllText(@"saved-web-page.html");
             try {
                 using (WebClient client = new WebClient()) {
@@ -292,8 +296,10 @@ namespace YlePodCatcher
 
                     lbi.Content = sp;
                     libraryCheckboxList.Items.Add(lbi);
+                    counter++;
                 }
             }
+            Debug.WriteLine("Count: " + counter.ToString());
         }
 
         private void infoButton_Click(object sender, RoutedEventArgs e) {
@@ -536,6 +542,12 @@ namespace YlePodCatcher
                 foreach (var line in lines) removedLibraries.Add(line);
             } catch  {
             }
+        }
+
+        private void testing_Click(object sender, RoutedEventArgs e) {
+            this.Hide();
+            Program.GetFiles();
+            Application.Current.Shutdown();
         }
     }
 }

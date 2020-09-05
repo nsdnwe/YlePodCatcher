@@ -26,7 +26,7 @@
                     <RowDefinition />
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0" FontWeight="Bold">Tallennuskansio:</Label>
+                <Label Grid.Column="0" Grid.Row="0" FontWeight="Bold" Name="fileLabel">Tallennuskansio:</Label>
                 <TextBox Name="baseFolder" Margin="3" Grid.Row="0" Grid.Column="1">c:\Testi kansio\Yle-radiodokumentit</TextBox>
                 <Button x:Name="browseFolder" Margin="3" Grid.Row="0" Grid.Column="3"  Content="  Selaa...  " HorizontalAlignment="Left" Click="browseFolder_Click" />
                 <!--<Label Grid.Column="0" Grid.Row="1" FontWeight="Bold">Hae lisätiedot:</Label>
@@ -43,6 +43,7 @@
             <Button Width="130" Height="25" Margin="3" Click="showAll_Click" Name="showAll" IsEnabled="False">Näytä kaikki</Button>
             <Button Width="130" Height="25" Margin="3" Click="onCloseClick" Content="Sulje"/>
             <fa:ImageAwesome Icon="Spinner" Margin="10" Spin="True" Height="48" Width="48" Visibility="Hidden" Name="spinner" />
+            <Button Width="130" Height="25" Margin="3"  x:Name="testing" IsDefault="True" Content="Test" Click="testing_Click"/>
         </StackPanel>
 
         <StackPanel Grid.Column="0" Grid.Row="1" Margin="1" HorizontalAlignment="Left" Orientation="Horizontal" Name="instruction" Visibility="Hidden" >
