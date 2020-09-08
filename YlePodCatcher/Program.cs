@@ -54,6 +54,7 @@ namespace YlePodCatcher {
             Console.WriteLine(string.Format("Löytyi yhteensä {0} uutta tiedostoa.", howManyNewFilesLoaded));
             if (howManyErros > 0) Console.WriteLine(string.Format("Ladattaessa tiedostoja tapahtui {0} virhettä.", howManyErros));
             Console.WriteLine("Kaikki ohjelmasarja on käsitelty.");
+            Console.Beep();
 
             Console.ReadKey();
         }

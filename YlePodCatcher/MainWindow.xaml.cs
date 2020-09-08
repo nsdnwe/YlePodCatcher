@@ -55,7 +55,7 @@ namespace YlePodCatcher
             } else {
                 baseFolder.Text = conf.BaseFolder;
             }
-            Console.Out.WriteLine("Valmis.");
+            Console.Out.WriteLine("Odottaa latauksen käynnistymistä.");
         }
 
         /// <summary>
