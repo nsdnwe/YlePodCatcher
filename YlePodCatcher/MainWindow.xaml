@@ -35,12 +35,11 @@
         </GroupBox>
 
         <StackPanel Margin= "1,11,1,1" HorizontalAlignment="Right" Grid.Column="1" Grid.Row="0" Grid.RowSpan="3">
-            <Button Width="130" Height="25" Margin="3" Click="onUpdateListClick" Name="updateList" IsDefault="True">Hae ohjelmasarjat
-            </Button>
-            <Button Width="130" Height="25" Margin="3" Click="onClearSelection" Name="clearSelection" IsEnabled="False">Poista kaikki valinnat</Button>
-            <Button Width="130" Height="25" Margin="3" Click="showOnlyRecommended_Click" Name="showOnlyRecommended" IsEnabled="False">Näytä vain suositellut</Button>
-            <Button Width="130" Height="25" Margin="3" Click="showAll_Click" Name="showAll" IsEnabled="False">Näytä kaikki</Button>
             <Button Width="130" Height="25" Margin="3" Click="onProcessClick" x:Name="process" IsEnabled="False" Content="Lataa valitut sarjat"/>
+            <Button Width="130" Height="25" Margin="3" Click="onUpdateListClick" x:Name="updateList" IsDefault="True" Content="Hae ohjelmasarjat"/>
+            <Button Width="130" Height="25" Margin="3" Click="onClearSelection" x:Name="clearSelection" IsEnabled="False" Content="Poista kaikki valinnat"/>
+            <!--<Button Width="130" Height="25" Margin="3" Click="showOnlyRecommended_Click" x:Name="showOnlyRecommended" IsEnabled="False" Content="Näytä vain suositellut"/>-->
+            <!--<Button Width="130" Height="25" Margin="3" Click="showAll_Click" x:Name="showAll" IsEnabled="False" Content="Näytä kaikki"/>-->
             <Button Width="130" Height="25" Margin="3" Click="onCloseClick" Content="Sulje"/>
             <fa:ImageAwesome Icon="Spinner" Margin="10" Spin="True" Height="48" Width="48" Visibility="Hidden" Name="spinner" />
         </StackPanel>

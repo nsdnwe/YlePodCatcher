@@ -2,18 +2,18 @@
 
 Tallentaa valittujen ohjelmasarjojen aiemmin lataamattomat MP3-tiedostot kovalevylle valittuun kansioon.
 
-Kuunnellut dokumentit voi siirtää latauskansion alle Kuunnellut-kansioon, jolloin näitä tiedostoja ei haeta uudelleen.
+Kuunnellut dokumentit voi siirtï¿½ï¿½ latauskansion alle Kuunnellut-kansioon, jolloin nï¿½itï¿½ tiedostoja ei haeta uudelleen.
 
 **Asennus**
 
-* Lataa .zip-paketti täältä https://www.nsd.fi/yle-pod-catcher/setup.zip
+* Lataa .zip-paketti tï¿½ï¿½ltï¿½ https://www.nsd.fi/yle-pod-catcher/setup.zip
 * Pura paketti 
 * Aja Setup.exe 
 
-**Tai tee käännös itse**
+**Tai tee kï¿½ï¿½nnï¿½s itse**
 
-* Ota lähdekoodit täältä GitHub:ista
+* Ota lï¿½hdekoodit tï¿½ï¿½ltï¿½ GitHub:ista
 * Asenna tarvittaessa Visual Studio, esim. ilmainen Community edition
-* Avaa lähdekoodit Visual Studioon
+* Avaa lï¿½hdekoodit Visual Studioon
 
 https://www.nsd.fi

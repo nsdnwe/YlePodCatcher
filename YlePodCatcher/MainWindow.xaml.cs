@@ -55,7 +55,8 @@ namespace YlePodCatcher
             } else {
                 baseFolder.Text = conf.BaseFolder;
             }
-            Console.Out.WriteLine("Odottaa latauksen käynnistymistä.");
+            Console.Out.WriteLine("Älä sulje tätä ikkunaa.");
+            updateListContent();
         }
 
         /// <summary>
@@ -77,8 +78,8 @@ namespace YlePodCatcher
             clearSelection.IsEnabled = true;
             process.IsEnabled = true;
             instruction.Visibility = System.Windows.Visibility.Visible;
-            showOnlyRecommended.IsEnabled = true;
-            showAll.IsEnabled = true;
+            //showOnlyRecommended.IsEnabled = true;
+            //showAll.IsEnabled = true;
             process.Focus();
         }
 
@@ -187,20 +188,23 @@ namespace YlePodCatcher
             if (!url.EndsWith("/")) url = url + "/";
 
             //string value = readHtml(url);
-            string value = "";
+            Console.Out.WriteLine("Luetaan YlePage.html");
+
+            string value = System.IO.File.ReadAllText(@"YlePage.html");
             int counter = 0;
 
             //value = System.IO.File.ReadAllText(@"saved-web-page.html");
-            try {
-                using (WebClient client = new WebClient()) {
-                    var htmlData = client.DownloadData("https://nsd.fi/yle-pod-catcher/saved-web-page.html");
-                    value = Encoding.UTF8.GetString(htmlData);
-                }
-            } catch (Exception ex) {
-                MessageBox.Show("Virhe: Kirjastolistaa ei löydy. Tarkasta verkkoyhteyden tila ja kokeile hetken kuluttua uudelleen.", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
-                this.Close();
-                return;
-            }
+            //try {
+                //using (WebClient client = new WebClient()) {
+
+                    //var htmlData = client.DownloadData("https://nsd.fi/yle-pod-catcher/saved-web-page.html");
+                    //value = Encoding.UTF8.GetString(htmlData);
+                //}
+            //} catch (Exception ex) {
+            //    MessageBox.Show("Virhe: Kirjastolistaa ei löydy. Tarkasta verkkoyhteyden tila ja kokeile hetken kuluttua uudelleen.", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
+            //    this.Close();
+            //    return;
+            //}
 
 
             if (value == "")
@@ -222,18 +226,24 @@ namespace YlePodCatcher
             string head = "";
             string tail = "";
             string libraryID = "";
+            string rawTitle = "";
+            string rawHead = "";
             string title = "";
             string desc = "";
 
-            splitWell(value, "card-list list", true, out head, out tail);
-            string rest = tail.Trim() + "END";
+            //splitWell(value, "card-list list", true, out head, out tail);
+            string rest = value.Trim() + "END";
 
             while (true)
             {
-                splitWell(rest, "href=\"https://areena.yle.fi/1-", true, out head, out tail);
+                splitWell(rest, "href=\"/audio/1-", true, out head, out tail);
                 if (tail == "") break;
                 splitWell(tail, "\">", true, out libraryID, out tail);
-                splitWell(tail, "</a>", true, out title, out tail);
+                splitWell(tail, "</a>", true, out rawTitle, out tail);
+                splitWell(rawTitle, ">", true, out rawHead, out title);
+                splitWell(title, "</div>", true, out title, out rawHead);
+
+                // <div class="CompactListCard__Title-ols5u1-1 bzFdFy">12 diktaattoria</div>
 
                 rest = tail;
 
@@ -243,6 +253,7 @@ namespace YlePodCatcher
                 // Add line on check box list
                 if (title != "null" && desc != "-1" && !removedLibraries.Any(z => z == libraryID))
                 {
+                    Console.Out.WriteLine(title);
                     Button btnInfo = new Button();
                     btnInfo.Content = " Info ";
                     //btnInfo.Content = "b" + libraryID;
@@ -307,7 +318,7 @@ namespace YlePodCatcher
             if (btn == null) return;
             string name = btn.Name;
             name = name.Substring(1, name.Length - 1);
-            System.Diagnostics.Process.Start("https://areena.yle.fi/1-" + name);
+            System.Diagnostics.Process.Start("https://areena.yle.fi/audio/1-" + name);
         }
 
         private void removeButton_Click(object sender, RoutedEventArgs e) {
@@ -322,7 +333,7 @@ namespace YlePodCatcher
         }
 
         private string getDescription(string libraryId) {
-            string url = "https://areena.yle.fi/1-" + libraryId;
+            string url = "https://areena.yle.fi/audio/1-" + libraryId;
             string value = readHtml(url);
 
             string head = "";

@@ -1,0 +1,8 @@
+- Avaa https://areena.yle.fi/audio/ohjelmat
+- Valitse: Podcastit ja puheohjelmat
+- Valitse: A-Ö
+- Selaa alas kunnes kaikki on lataantunut
+- Paina F12
+- Valitse HTML elementti
+- Valitse hiiren oikealla: Copy, Copy element
+- Paste YlePage.html tiedostoon
