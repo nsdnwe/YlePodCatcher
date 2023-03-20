@@ -42,6 +42,9 @@ namespace YlePodCatcher {
                 // Handle one library
                 makeSubfolderIfNeeded(library);
 
+                // Create .url file if needed
+                addUrlFileOfOneLibrary(library);
+
                 // Get MP3 files of one library => liberary.Mp3Files
                 getMp3ListOfOneLibrary(library);
 
@@ -114,6 +117,20 @@ namespace YlePodCatcher {
             }
         }
 
+        /// <summary>
+        /// Get list of mp3 files in one library
+        /// </summary>
+        private static void addUrlFileOfOneLibrary(Library library){
+            string fullUrl = "https://areena.yle.fi/audio/1-" + library.LibraryID;
+
+            string fullFolder = BaseFolderPath + library.Title;
+            string fullUri = fullFolder + "\\library.url";
+            if(library.LibraryID == "3948085") {
+                string xx = "xx";
+            }
+            if(!File.Exists(fullUri)) File.AppendAllText(fullUri, fullUrl);
+
+        }
         /// <summary>
         /// Get list of mp3 files in one library
         /// </summary>
