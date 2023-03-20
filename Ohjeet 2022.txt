@@ -6,3 +6,6 @@
 - Valitse HTML elementti
 - Valitse hiiren oikealla: Copy, Copy element
 - Paste YlePage.html tiedostoon
+
+
+JAA. EIPÄ ENÄÄ ONNISTU NÄIN
