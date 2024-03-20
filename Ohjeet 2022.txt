@@ -1,11 +1,7 @@
-- Avaa https://areena.yle.fi/audio/ohjelmat
-- Valitse: Podcastit ja puheohjelmat
-- Valitse: A-Ö
-- Selaa alas kunnes kaikki on lataantunut
-- Paina F12
-- Valitse HTML elementti
-- Valitse hiiren oikealla: Copy, Copy element
-- Paste YlePage.html tiedostoon
+Chrome driver päivitys
+- Avaa https://googlechromelabs.github.io/chrome-for-testing/#stable
+- Lataa ja pura zip
+- Kopioi chromedriver.exe ja korvaa vanha tiedosto bin\debug kansiossa
 
-
-JAA. EIPÄ ENÄÄ ONNISTU NÄIN
+MP3 kansioiden päivitys (Selenium)
+- Käynnistä ohjelma ja valitse "Hae ohjelmasarjat"

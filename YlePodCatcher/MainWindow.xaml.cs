@@ -20,6 +20,19 @@ using FontAwesome.WPF;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium;
+using System.Reflection;
+using System.Security.Cryptography;
+
+// Chrome Driver update:
+// ---------------------
+// Check Chrome version from Help, About Google Chrome
+// Get correct driver from https://chromedriver.chromium.org/downloads
+// Extract and copy to \bin\Debug
+
+// https://www.toolsqa.com/selenium-webdriver/c-sharp/webelement-commands-in-c/
+
 
 // \\192.168.100.110\YleDokumentit\
 // Avaa https://areena.yle.fi/radio/a-o rullaa loppuun ja tallenna HTML koko sivusto nimellä saved-web-page.html => www.nsd.fi
@@ -31,10 +44,10 @@ namespace YlePodCatcher
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
-    {
+    public partial class MainWindow : Window {
         private const string appCaption = "Pod";
-        private IList<Library> libraries;
+        private IList<Library> libraries; // Selected libraries
+        private IList<Library> foundLibraries; // Found by Selenium
         private const string baseUrl = @"https://areena.yle.fi/radio/a-o/ladattavat/";
 
         private List<string> removedLibraries = new List<string>();
@@ -42,10 +55,9 @@ namespace YlePodCatcher
         /// <summary>
         /// Start application
         /// </summary>
-        public MainWindow()
-        {
+        public MainWindow() {
             InitializeComponent();
-
+            
             // Try to load old values
 
             Configuration conf = deserializeFromXml();
@@ -55,8 +67,19 @@ namespace YlePodCatcher
             } else {
                 baseFolder.Text = conf.BaseFolder;
             }
+            loadFoundLibrariesFromFile();
+            checkWhichLibrariesHaveFolder(baseFolder.Text);
+            createCheckboxListFromFoundLibraries(conf);
+            clearSelection.IsEnabled = true;
+            process.IsEnabled = true;
+            instruction.Visibility = System.Windows.Visibility.Visible;
+            //showOnlyRecommended.IsEnabled = true;
+            //showAll.IsEnabled = true;
+            process.Focus();
+
+
             Console.Out.WriteLine("Älä sulje tätä ikkunaa.");
-            updateListContent();
+            
         }
 
         /// <summary>
@@ -64,7 +87,181 @@ namespace YlePodCatcher
         /// </summary>
         private void onUpdateListClick(object sender, RoutedEventArgs e) {
             // Get libraries from yle web pages
-            updateListContent();
+            fillLibraryCheckboxListSelenium();
+        }
+
+        private void fillLibraryCheckboxListSelenium() {
+            var driver = new ChromeDriver();
+            foundLibraries = new List<Library>();
+            loadRemovedLibrariesFromFile(); // => removedLibraries list
+
+            libraryCheckboxList.Items.Clear();
+            Configuration conf = deserializeFromXml();
+
+
+            processTopLevel(driver, "Tiede", "https://areena.yle.fi/podcastit/ohjelmat/57-RyyrXny8e");
+            processTopLevel(driver, "Historia", "https://areena.yle.fi/podcastit/ohjelmat/57-omYoDk4kY");
+            processSecondLevel(driver, "Terveys ja hyvinvointi", "https://areena.yle.fi/podcastit/ohjelmat/30-1582");
+
+            
+            driver.Close();
+            savefoundLibrariesToFile();
+            createCheckboxListFromFoundLibraries(conf);
+            Console.WriteLine("\r\nKansiot päivitetty. Valitse rastit.");
+        }
+
+        private void processTopLevel(ChromeDriver driver, string name, string url) {
+            driver.Url = url;
+
+            Console.WriteLine("\r\nRullaa sivun loppuun ja paina Enter\r\n");
+            Console.ReadKey();
+
+            // Get top level folders
+            List<string> folderUrls = new List<string>();
+            var topLevelList = driver.FindElements(By.LinkText("Näytä kaikki"));
+            foreach (var topLevelFolder in topLevelList) {
+                var parent = topLevelFolder.FindElement(By.XPath("./.."));
+                string linkText = parent.GetAttribute("innerHTML");
+                string href = getFirstHrefFromText(parent.GetAttribute("innerHTML"));
+                folderUrls.Add("https://areena.yle.fi" + href);
+
+                //Console.WriteLine(linkText + ": " + href);
+                //Console.WriteLine();
+            }
+
+            // Process 2nd level folders
+            foreach (var folderUrl in folderUrls) processSecondLevel(driver, name, folderUrl);
+        }
+
+        private void processSecondLevel(ChromeDriver driver, string name, string folderUrl) {
+
+            driver.Url = folderUrl;
+
+            Console.WriteLine("\r\nRullaa sivun loppuun ja paina Enter\r\n");
+            Console.ReadKey();
+
+            var mainContent = driver.FindElement(By.Id("maincontent"));
+            string bigFatHtml = mainContent.GetAttribute("innerHTML");
+
+            string head = "";
+            string tail = "";
+            string libraryID = "";
+            string rawTitle = "";
+            string rawHead = "";
+            string title = "";
+            string title2 = "";
+            string desc = "";
+            string thisCard;
+
+            // Loop all SeriesCard__TitleLink.. elements
+
+            while (true) {
+                splitWell(bigFatHtml, "SeriesCard__TitleLink", true, out head, out tail);
+                if (tail == "") break;
+
+                splitWell(tail, "</article>", true, out thisCard, out bigFatHtml);
+                string href = getFirstHrefFromText(thisCard);
+
+                // Get lib id
+                splitWell(href, "/1-", true, out head, out libraryID, true);
+
+                splitWell(thisCard, "<span>", true, out head, out tail);
+                splitWell(tail, "<span>", true, out head, out tail);
+                splitWell(tail, "</span>", true, out title, out tail);
+
+                // Has two lines?
+                if(tail.StartsWith("<br>")) {
+                    splitWell(tail, "<br><span>", true, out head, out tail);
+                    splitWell(tail, "</span>", true, out title2, out tail);
+                    title += " " + title2;
+                    title = title.Replace("<span>","").Trim();
+                }
+
+                // Add result on page
+
+                // Add line on check box list
+                if (title != "null" && desc != "-1" && !removedLibraries.Any(z => z == libraryID)) {
+                    Console.Out.WriteLine(title);
+                    if (title.StartsWith("Länsimaisen sivistyksen")) {
+                        string xx = "";
+                    }
+
+                    if (!foundLibraries.Any(z => z.LibraryID == libraryID)) foundLibraries.Add(new Library() { LibraryID = libraryID, Title = title });
+                }
+            }
+        }
+
+        private void createCheckboxListFromFoundLibraries(Configuration conf) {
+            bool backcolored = false;
+            Color backcoloredColor = Color.FromArgb(0xFF, 0xE8, 0xF8, 0xFF);
+
+            foreach (var lib in foundLibraries.OrderBy(z => z.Title).ToList()) {
+                string libraryID = lib.LibraryID;
+                string title = lib.Title;
+                string folderExist = "";
+                if (lib.HasFolder) folderExist = "(f)";
+
+                Button btnInfo = new Button();
+                btnInfo.Content = " Info ";
+                btnInfo.Margin = new Thickness(0);
+                btnInfo.Name = "b" + libraryID;
+
+                btnInfo.AddHandler(Button.ClickEvent, new RoutedEventHandler(infoButton_Click)); // Add event hander for Info
+
+                Button btnDelete = new Button();
+                btnDelete.Content = " Poista listalta ";
+                btnDelete.Margin = new Thickness(0);
+                btnDelete.Name = "d" + libraryID;
+
+                btnDelete.AddHandler(Button.ClickEvent, new RoutedEventHandler(removeButton_Click)); // Add event hander for Delete
+
+                title = removeInvalidFileNameChars(title);
+                ListBoxItem lbi = new ListBoxItem();
+
+
+                lbi.Margin = new Thickness(1);
+                if (backcolored) {
+                    lbi.Background = new SolidColorBrush(backcoloredColor);
+                    backcolored = false;
+                } else {
+                    backcolored = true;
+                }
+                CheckBox cbo = new CheckBox();
+                cbo.Name = "f" + libraryID;
+                cbo.Width = 465;
+                cbo.Margin = new Thickness(5);
+                if (isOnList(conf, libraryID)) cbo.IsChecked = true;
+                cbo.Content = title;
+                if (lib.HasFolder) cbo.FontWeight = FontWeights.Bold;
+
+                Label lab = new Label();
+                lab.Content = "";
+                lab.Margin = new Thickness(0);
+                lab.Padding = new Thickness(0);
+
+                //Label folEx = new Label();
+                //folEx.Content = folderExist;
+                //folEx.Margin = new Thickness(0);
+                //folEx.Padding = new Thickness(0);
+                //folEx.Width = 20;
+
+                StackPanel sp = new StackPanel();
+                sp.Orientation = Orientation.Horizontal;
+                sp.Children.Add(btnInfo);
+                sp.Children.Add(cbo);
+                sp.Children.Add(lab);
+                //sp.Children.Add(folEx);
+                sp.Children.Add(btnDelete);
+                lbi.Content = sp;
+                libraryCheckboxList.Items.Add(lbi);
+            }
+        }
+
+        private string getFirstHrefFromText(string text) {
+            string head, tail;
+            splitWell(text, "href=\"", true, out head, out tail);
+            splitWell(tail, "\"", true, out head, out tail);
+            return head;
         }
 
 
@@ -72,7 +269,7 @@ namespace YlePodCatcher
             if (!checkBaseUrlAndFolder()) return;
 
             this.Cursor = Cursors.Wait;
-            fillLibraryCheckboxList();
+            fillLibraryCheckboxListSelenium();
             this.Cursor = Cursors.Arrow;
 
             clearSelection.IsEnabled = true;
@@ -86,10 +283,8 @@ namespace YlePodCatcher
         /// <summary>
         /// Get files button clicked
         /// </summary>
-        private void onProcessClick(object sender, RoutedEventArgs e)
-        {
-            if (baseFolder.Text.Trim() == "")
-            {
+        private void onProcessClick(object sender, RoutedEventArgs e) {
+            if (baseFolder.Text.Trim() == "") {
                 MessageBox.Show("Hakemisto puuttuu.", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -100,8 +295,7 @@ namespace YlePodCatcher
             // Save checkbox selection for next time
             serializeToXml();
 
-            if (libraries.Count == 0)
-            {
+            if (libraries.Count == 0) {
                 MessageBox.Show("Yhtään ohjelmasarjaa ei ole valittuna.", appCaption, MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -120,15 +314,13 @@ namespace YlePodCatcher
             Application.Current.Shutdown();
         }
 
-        private void onCloseClick(object sender, RoutedEventArgs e)
-        {
+        private void onCloseClick(object sender, RoutedEventArgs e) {
             this.Close();
         }
 
         private void onClearSelection(object sender, RoutedEventArgs e) {
             if (MessageBox.Show("Poista kaikki checkbox-valinnat?", appCaption, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) return;
-            for (int i = 0; i < libraryCheckboxList.Items.Count; i++)
-            {
+            for (int i = 0; i < libraryCheckboxList.Items.Count; i++) {
                 ListBoxItem lbi = (ListBoxItem)libraryCheckboxList.Items[i];
                 StackPanel sp = (StackPanel)lbi.Content;
                 CheckBox cbo = (CheckBox)sp.Children[1];
@@ -138,7 +330,7 @@ namespace YlePodCatcher
         private void showOnlyRecommended_Click(object sender, RoutedEventArgs e) {
             this.Cursor = Cursors.Wait; // Yes, must be like this. Yay wpf!
             if (MessageBox.Show("Näytetäänkö listalla vain suositellut ohjelmasarjat?", appCaption, MessageBoxButton.OKCancel, MessageBoxImage.Question) == MessageBoxResult.Cancel) {
-                this.Cursor = Cursors.Arrow; 
+                this.Cursor = Cursors.Arrow;
                 return;
             }
 
@@ -168,7 +360,7 @@ namespace YlePodCatcher
                 File.Delete("removed-libraries.txt");
                 updateListContent();
                 this.Cursor = Cursors.Arrow;
-            } catch  {
+            } catch {
             }
         }
 
@@ -177,6 +369,8 @@ namespace YlePodCatcher
         /// </summary>
         private void fillLibraryCheckboxList()
         {
+            // VANHA. 
+            
             loadRemovedLibrariesFromFile(); // => removedLibraries list
 
             // Try to load old values
@@ -559,6 +753,148 @@ namespace YlePodCatcher
             this.Hide();
             Program.GetFiles();
             Application.Current.Shutdown();
+        }
+
+
+        // ----------------------------------
+
+        private static string getTextOrEmpty(ChromeDriver driver, string xPath) {
+            try {
+                return driver.FindElement(By.XPath(xPath)).Text;
+            } catch {
+                return "";
+            }
+        }
+        private static string getTextOrEmpty(IWebElement webElement, string xPath) {
+            try {
+                return webElement.FindElement(By.XPath(xPath)).Text;
+            } catch {
+                return "";
+            }
+        }
+        private static string getAttributeOrEmpty(ChromeDriver driver, string xPath, string attibute) {
+            try {
+                return driver.FindElement(By.XPath(xPath)).GetAttribute(attibute);
+            } catch {
+                return "";
+            }
+        }
+        private static bool isLinkPresent(ChromeDriver driver, string text) {
+            try {
+                var element = driver.FindElement(By.PartialLinkText(text));
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        private static bool isClassPresent(ChromeDriver driver, string className) {
+            try {
+                var cls = driver.FindElement(By.ClassName(className));
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        private static bool isClassPresentInElement(IWebElement webElement, string className) {
+            try {
+                var cls = webElement.FindElement(By.ClassName(className));
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        private static void waitUntilXpathElementAppears(ChromeDriver driver, string xPath, int timeout = 10) {
+            int retryCount = 0;
+            while (true) {
+                try {
+                    var cls = driver.FindElement(By.XPath(xPath));
+                    return;
+                } catch {
+                    Thread.Sleep(1000);
+                    retryCount++;
+                    if (retryCount == timeout) throw new Exception("Element not found");
+                }
+            }
+        }
+
+        private static void waitUntilClassElementAppears(ChromeDriver driver, string className, int timeout = 10) {
+            int retryCount = 0;
+            while (true) {
+                try {
+                    var cls = driver.FindElement(By.ClassName(className));
+                    return;
+                } catch {
+                    Thread.Sleep(1000);
+                    retryCount++;
+                    if (retryCount == timeout) throw new Exception("Element not found");
+                }
+            }
+        }
+
+
+        private static void splitWell(string fullString, string splitter, bool removeSplitter, out string head, out string tail, bool reverse = false) {
+            head = fullString;
+            tail = "";
+            int pos = 0;
+            if (reverse)
+                pos = fullString.LastIndexOf(splitter);
+            else
+                pos = fullString.IndexOf(splitter);
+
+            if (pos == -1) return;
+
+            head = fullString.Substring(0, pos);
+
+            var sl = splitter.Length;
+            if (removeSplitter) {
+                tail = fullString.Substring(pos + sl, fullString.Length - pos - sl);
+            } else {
+                tail = fullString.Substring(pos, fullString.Length - pos);
+            }
+        }
+
+        private void savefoundLibrariesToFile() {
+            StreamWriter sw = new StreamWriter("found-libraries.txt");
+            foreach (var lib in foundLibraries) {
+                sw.WriteLine(string.Format("\"{0}\";\"{1}\"", lib.LibraryID, lib.Title));
+            }
+            sw.Close();
+        }
+
+        private void loadFoundLibrariesFromFile() {
+            foundLibraries = new List<Library>();
+            try {
+                var lines = File.ReadAllLines("found-libraries.txt");
+                foreach (var line in lines) {
+                    var parts = line.Split(';');
+                    var lib = new Library();
+                    lib.LibraryID = parts[0].Replace("\"", "");
+                    lib.Title = parts[1].Replace("\"", "");
+                    foundLibraries.Add(lib);
+                }
+            } catch {
+            }
+        }
+        private void checkWhichLibrariesHaveFolder(string rootFolderName) {
+            var folders = getFolders(rootFolderName);
+            foreach (var folder in folders) {
+                var lib = foundLibraries.FirstOrDefault(z => z.Title == folder);
+                if (lib != null) lib.HasFolder = true;
+            }
+        }
+        public List<string> getFolders(string folderName) {
+            var folders = new List<string>();
+            var files = Directory.GetDirectories(folderName);
+            foreach (var file in files) {
+                var fileInfo = new FileInfo(file);
+                if (fileInfo.Attributes.HasFlag(FileAttributes.Directory)) {
+                    folders.Add(fileInfo.Name);
+                }
+            }
+            return folders;
         }
     }
 }

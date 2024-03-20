@@ -33,6 +33,8 @@ namespace YlePodCatcher {
 
             // Loop all the libraries
             foreach (var library in Libraries) {
+                //if (library.Title != "Lentäminen") continue;
+
                 Console.WriteLine("");
                 Console.WriteLine("-------------------------------------------------------------------------------");
                 Console.WriteLine("Käsitellään ohjelmasarjaa: " + library.Title);
