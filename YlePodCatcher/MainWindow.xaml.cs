@@ -24,6 +24,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
 using System.Reflection;
 using System.Security.Cryptography;
+using OpenQA.Selenium.Support.UI;
 
 // Chrome Driver update:
 // ---------------------
@@ -113,8 +114,8 @@ namespace YlePodCatcher
         private void processTopLevel(ChromeDriver driver, string name, string url) {
             driver.Url = url;
 
-            Console.WriteLine("\r\nRullaa sivun loppuun ja paina Enter\r\n");
-            Console.ReadKey();
+            //Console.WriteLine("\r\nRullaa sivun loppuun ja paina Enter\r\n");
+            //Console.ReadKey();
 
             // Get top level folders
             List<string> folderUrls = new List<string>();
@@ -123,7 +124,7 @@ namespace YlePodCatcher
                 var parent = topLevelFolder.FindElement(By.XPath("./.."));
                 string linkText = parent.GetAttribute("innerHTML");
                 string href = getFirstHrefFromText(parent.GetAttribute("innerHTML"));
-                folderUrls.Add("https://areena.yle.fi" + href);
+                folderUrls.Add(href);
 
                 //Console.WriteLine(linkText + ": " + href);
                 //Console.WriteLine();
@@ -134,14 +135,21 @@ namespace YlePodCatcher
         }
 
         private void processSecondLevel(ChromeDriver driver, string name, string folderUrl) {
-
             driver.Url = folderUrl;
 
-            Console.WriteLine("\r\nRullaa sivun loppuun ja paina Enter\r\n");
-            Console.ReadKey();
+            //var mainContent = driver.FindElement(By.ClassName("TabContent"));
 
-            var mainContent = driver.FindElement(By.Id("maincontent"));
-            string bigFatHtml = mainContent.GetAttribute("innerHTML");
+            //WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            //IWebElement element = wait.Until(driver.ElementIsVisible(By.Id("someId")));
+
+            //Console.WriteLine("\r\nRullaa sivun loppuun ja paina Enter\r\n");
+            //Console.ReadKey();
+            System.Threading.Thread.Sleep(2000);
+                
+
+            //var mainContent = driver.FindElement(By.ClassName("TabContent"));
+            //string bigFatHtml = mainContent.GetAttribute("innerHTML");
+            string bigFatHtml = driver.PageSource;
 
             string head = "";
             string tail = "";
@@ -156,26 +164,26 @@ namespace YlePodCatcher
             // Loop all SeriesCard__TitleLink.. elements
 
             while (true) {
-                splitWell(bigFatHtml, "SeriesCard__TitleLink", true, out head, out tail);
+                splitWell(bigFatHtml, "Card_link_", true, out head, out tail);
                 if (tail == "") break;
 
-                splitWell(tail, "</article>", true, out thisCard, out bigFatHtml);
+                splitWell(tail, "</a>", true, out thisCard, out bigFatHtml);
                 string href = getFirstHrefFromText(thisCard);
 
                 // Get lib id
                 splitWell(href, "/1-", true, out head, out libraryID, true);
 
-                splitWell(thisCard, "<span>", true, out head, out tail);
-                splitWell(tail, "<span>", true, out head, out tail);
-                splitWell(tail, "</span>", true, out title, out tail);
+                splitWell(thisCard, href, true, out head, out tail);
+                splitWell(tail, "\">", true, out head, out title);
+
 
                 // Has two lines?
-                if(tail.StartsWith("<br>")) {
-                    splitWell(tail, "<br><span>", true, out head, out tail);
-                    splitWell(tail, "</span>", true, out title2, out tail);
-                    title += " " + title2;
-                    title = title.Replace("<span>","").Trim();
-                }
+                //if (tail.StartsWith("<br>")) {
+                //    splitWell(tail, "<br><span>", true, out head, out tail);
+                //    splitWell(tail, "</span>", true, out title2, out tail);
+                //    title += " " + title2;
+                //    title = title.Replace("<span>","").Trim();
+                //}
 
                 // Add result on page
 
